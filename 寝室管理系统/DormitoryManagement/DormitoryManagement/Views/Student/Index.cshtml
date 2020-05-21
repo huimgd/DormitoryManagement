@@ -1,0 +1,640 @@
+﻿@model IEnumerable<DormitoryManagement.Models.Student>
+@using PagedList
+@using PagedList.Mvc
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/LayoutPage.cshtml";
+}
+<link href="~/Content/MyClass.css" rel="stylesheet" />
+<link href="~/dist/css/jquery.page.css" rel="stylesheet" />
+<script src="~/dist/js/jquery.page.js"></script>
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-5 align-self-center">
+            <h4 class="page-title">学生管理</h4>
+        </div>
+        <div class="col-7 align-self-center">
+            <div class="d-flex align-items-center justify-content-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="#"></a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">学生管理</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <button class="btn btn-sm pull-left" title="添加" data-toggle="modal" data-target="#AddStudent" id="Addbtn">
+            <img src="~/Image/plus.svg" />
+        </button>
+        <button class="btn btn-primary btn-md pull-left" data-toggle="modal" data-target="#Upload">
+            批量添加
+        </button>
+        <div class="pull-right screen  ml-auto">
+            <span class="left">班级筛选:</span>
+            <select id="ClassScreen" class="right">
+
+            </select>
+        </div>
+        <!-- 批量添加 -->
+        <div class="modal fade" id="Upload" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel">
+                            批量添加学生
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="bulkDlg">
+                            <div class="col-xs-12">
+                                <form class="form-horizontal" id="bulkForm" enctype="multipart/form-data">
+
+                                    <div class="form-group">
+
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-9">
+                                            <input type="file" id="BulkXls" name="BulkXls" /><br />
+                                            <span id="_alert" style="color:red"></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                            关闭
+                        </button>
+                        <button type="button" class="btn btn-primary" id="sub">
+                            提交
+                        </button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+
+    </div>
+</div>
+
+<table id="tab" border="1" class="table table-condensed table-bordered table-striped"></table>
+@*分页*@
+<div id="Fy">
+    <div class="pagination " id="page"></div>
+</div>
+    
+@*添加学生模态框*@
+<div class="modal fade" id="AddStudent" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">
+                    添加学生
+                </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <label for="class">班级:</label>
+                    <select id="class" class="class" style="border-radius:5px;"></select>
+                </div>
+                <div class="row"><label>学生姓名：</label><input type="text" id="StudentName" /></div>
+                <div class="row"><label>联系方式：</label><input type="text" id="StudentContact" /></div>
+                <div class="row"><span style="color:#aa2323;font-size:1.2em" id="AddStualert"></span></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    关闭
+                </button>
+                <button type="button" class="btn btn-primary " id="OK">
+                    提交更改
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<!-- 修改班级模态框 -->
+<div class="modal fade" id="UpdateClass">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title">修改学生班级</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <div class="row">
+                    <input id="NowClass" style="width:100px;text-align:center" readonly />-->
+                    <select class="class UpdateClass" name="UpdateClass"></select>
+                </div>
+                <div class="row">
+                    <span style="color:red;height:10px;" id="UpdateClassalert"></span>
+                </div>
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary " id="UpdateClassOK">
+                    提交
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="Esc">
+                    关闭
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- 修改学生信息模态框 -->
+<div class="modal fade" id="UpdateStuInfo">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title">修改学生信息</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <div class="row">
+                    <label>学生姓名：</label><input type="text" id="StuName" />
+                </div>
+                <div class="row" style="margin-top:10px;">
+                    <label>联系方式：</label><input type="text" id="StuContact" />
+                </div>
+                <div class="row">
+                    <span style="color:red;height:10px;" id="UpdateStuInfoalert"></span>
+                </div>
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary " id="UpdateStuInfoOK">
+                    提交
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="Esc">
+                    关闭
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    var State = "";//用于判断班级名是否可用状态
+
+        var pagenumber = 1;//起始页码
+         var MAXpagenumber =0;//最大页数。
+    var ALLdata = "";//用于保存后台返回的数据
+    var ClassId = 0;//用于保存班级id
+    var StuID = "";//用于修改学生班级，保存当前学生的id
+    var newClass = 0;
+    var beforeClass = 0;
+    var oldName = "";//以前的学生姓名，修改学生信息时用
+    var oldContact = "";//以前的学生联系方式，修改学生信息时用
+    var pd//用来判断请求时否执行完
+    var ClassName = "";//用于保存班级名
+   
+     // 搜索
+    function Search(Conditions) { 
+        if (ClassName != "请选择班级" || Conditions !="") {
+            Conditions += " ";
+            Conditions += ClassName;
+        }
+        var data = {
+            page: pagenumber,
+            Value: Conditions
+        };
+        pd = $.post("/Student/FindAll", data, function (data) {
+            MAXpagenumber = data.pg;
+            data = JSON.parse(data.ret);//把json字符串转换为json对象
+                ALLdata = data;
+                var item = "<tr><td>选择</td><td>@Html.DisplayNameFor(model => model.Name)</td><td>@Html.DisplayNameFor(model => model.Contact)</td><td>所在班级</td><td>@Html.DisplayNameFor(model => model.State)</td><td colspan='2'>操作</td></tr>";
+                var state = "";//用于判断当前班级是否启用
+                //遍历集合
+                $.each(data, function (index, value) {
+                    if (value.State == 0) {
+                        state = "在读"
+                        se = "NoSelected";
+                    } else {
+                        se = "Selected"
+                        state = "已毕业"
+                    }
+                    item += "<tr>";
+                    item += "<td><label><input  type='checkbox' name='personality' class='rediobtn xz' value=" + value.Id + "></label></td>";
+                    item += "<td>" + value.Name + "</td>";
+                    item += "<td>" + value.Contact + "</td>";
+                    item += "<td>" + value.ClassName + "</td>";
+                    item += "<td><a href='#'onclick='update(" + index + ")' >" + state + "</a></td>";
+                    item += "<td><a href='#' class=" + se + " onclick='UpdateClass(" + index + ")' class='Selected' data-toggle='modal' data-target='#UpdateClass'>修改所在班级</a></td>";
+                    item += "<td><a href='#' class=" + se + " onclick='UpdateStuInfo(" + index + ")' class='Selected' data-toggle='modal' data-target='#UpdateStuInfo'>修改学生信息</a></td>";
+                    item += "</tr>";
+            });
+            if (data == "" || data == null) {
+                $("#tab").html("暂无数据");
+                $("#Fy").css("display", "none");
+            } else {
+                $("#tab").html(item);
+                //控制上一页和下一页的样式
+                if (pagenumber == 1) {
+                    $(".first").css("background-color", "#ced0d1");
+                    $(".prv ").css("background-color", "#ced0d1");
+                }
+                else {
+                    $(".first").css("background-color", "#fbfbfb");
+                    $(".prv ").css("background-color", "#fbfbfb");
+                }
+                if (pagenumber == MAXpagenumber) {
+                    $(".last").css("background-color", "#ced0d1");
+                    $(".next").css("background-color", "#ced0d1");
+                } else {
+                    $(".last").css("background-color", "#fbfbfb");
+                    $(".next").css("background-color", "#fbfbfb");
+                }
+                if (MAXpagenumber == 1) {
+                    $("#Fy").css("display", "none");
+                } else {
+                    $("#Fy").css("display", "block");
+                }
+            }
+        });
+       
+    }
+    //联想词功能
+    function Lenovo(Conditions) {
+        var data = {
+            Value: Conditions
+        };
+        Le = $.get("/Student/Lenovo", data, function (data) {
+            data = JSON.parse(data);
+            var item = "";
+            item += "<ul class='Le_ul'>";
+            $.each(data, function (index, value) {
+                item += "<li>" + value.Name + "</li>"
+            });
+            item += "</ul>";
+            $("#LenovoBox").html(item);
+        });
+    }
+    //查询所有班级
+    function FindAllClass() {
+        $.get("/Student/FindAllClass", "", function (data) {
+            data = JSON.parse(data);//把json字符串转换为json对象
+            var count = Object.keys(data).length;//得到班级个数
+            var item = "";
+            item += "<option value='0'>请选择班级</option>";
+            //遍历集合
+            $.each(data, function (index, value) {
+                item += "<option value=" + value.Id + ">" + value.ClassName + "</option>";
+            });
+            $(".class").html(item);
+            $("#ClassScreen").html(item);
+        });
+    }
+      //修改状态
+    function update(index) {
+        var s = ALLdata[index].State;
+        if (s == 1) {
+            s = 0;
+        } else {
+            s = 1;
+        };
+        var data = {
+            id: ALLdata[index].Id,
+            state: s
+        }
+        $.post("/Student/UpdateState",data, function (value) {
+            if (value == "True") {
+                Search(Conditions);
+            }
+            else {
+                alert("失败")
+            }
+
+        })
+    };
+    //修改学生信息
+    function UpdateStuInfo(index)
+    {
+        var StuId = ALLdata[index].Id;
+        StuID = StuId;
+        var StuName = ALLdata[index].Name;
+        var StuContact = ALLdata[index].Contact;
+        oldName = StuName;
+        oldContact = StuContact;
+        $("#StuName").val(StuName);
+        $("#StuContact").val(StuContact);
+
+    }
+    //修改学生所在班级前查询这个学生当前所在班级
+    function UpdateClass(index)
+    {
+        var StuId = ALLdata[index].Id;
+        StuID = StuId;
+        var data = {
+            stuid: StuId
+        }
+        $.post("/Student/FindStuNowClass", data, function (data) {
+            data = JSON.parse(data);
+            $.each(data, function (index, value) {
+                beforeClass = value.Id;
+                $("#NowClass").val(value.ClassName);
+            });
+        })
+    }
+    //修改学生信息提交按钮
+    $("#UpdateStuInfoOK").click(function () {
+        var name= $("#StuName").val();
+        var contact = $("#StuContact").val();
+        if (name == oldName && contact == oldContact) {
+            $("#UpdateStuInfo").modal('hide');
+        }
+        else if (name == "" && contact == "") {
+            $("#StuName").focus();
+            $("#UpdateStuInfoalert").html("*请输入学生名和联系方式")
+        }
+        else if (name == "") {
+            $("#UpdateStuInfoalert").html("*学生姓名不能为空")
+            $("#StuName").focus();
+        }
+        else if (contact == "") {
+            $("#UpdateStuInfoalert").html("*学生联系方式不能为空");
+            $("#StuContact").focus();
+        }
+        else
+        {
+            var data = {
+                Name: name,
+                Contact: contact,
+                StuId: StuID
+            }
+            $.post("/Student/AddSelect", data, function (value) {
+                if (value == "True") {
+                    $("#UpdateStuInfoalert").html("*该学生已存在")
+                }
+                else if (value == "False") {
+                    $.post("/Student/UpdateStuInfo", data, function (value) {
+                        if (value == "True") {
+                            $("#UpdateStuInfo").modal('hide');
+                            Search(Conditions);
+                        }
+                        else {
+                            alert("修改失败");
+                        }
+                        $("#UpdateStuInfoalert").html("");
+                    })
+                }
+            })
+        }
+
+    })
+    $(document).ready(function () {
+      Search(Conditions);//查询所有班级
+        //请求执行完后再执行分页
+        $.when(pd).done(function () {
+            page();
+        });
+        //分页大法
+        function page() {
+            $("#page").Page({
+                totalPages: MAXpagenumber,//分页总数
+                liNums: 5,//分页的数字按钮数(建议取奇数)
+                activeClass: 'activP', //active 类样式定义
+                callBack: function (page) {
+                    pagenumber = page;
+                    Search(Conditions);
+                }
+            });
+        };
+        FindAllClass();//查询出所有班级
+        //获得选择的按钮
+        //必须选择一个
+        function selectOne() {
+            var names = document.getElementsByClassName("xz");
+            var flag = false;//标记判断是否选中一个
+            for (var i = 0; i < names.length; i++) {
+                if (names[i].checked) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) {
+                alert("请最少选择一项！");
+                return false;
+            }
+        }
+        $("#BulkXls").change(function () {
+            var filename = $("#BulkXls").val();
+            console.log(filename)
+            if (filename != "") {
+                $("#_alert").html("");
+            }
+        })
+        //批量添加上穿excel文件
+        $("#sub").click(function () {
+            var filename = $("#BulkXls").val();
+            console.log(filename)
+            if ( filename=="") {
+                $("#_alert").html("请选择文件2");
+            }
+            else if (filename != ""){
+               $("#Upload").modal('hide'); //关闭模态框
+                $("#BulkXls").val("");//清空文件名
+                var formData = new FormData();
+                formData.append("BulkXls", document.getElementById("BulkXls").files[0]);
+                $.ajax({
+                    url: "/Student/UploadXls",
+                    type: "POST",
+                    data: formData,
+                    /**
+                    *必须false才会自动加上正确的Content-Type
+                    */
+                    contentType: false,
+                    /**
+                    * 必须false才会避开jQuery对 formdata 的默认处理
+                    * XMLHttpRequest会对 formdata 进行正确的处理
+                    */
+                    processData: false,
+                    success: function (data) {
+                        each(data, function (index, value)
+                        {
+                            alert(index.value)
+                        })
+                    },
+                    error: function () {
+                        //执行失败
+                        alert("添加失败请联系管理员")
+                    }
+                });
+            }
+        });
+        $("#ClassScreen").change(function () {
+            var val = this.selectedIndex;
+            ClassName = $('option').eq(val).html();
+            Search(Conditions)
+        });
+        //班级下拉列表改变时获取班级下拉列表值
+        $("#class").change(function () {
+            var val = this.selectedIndex;
+            var Classid = $('option').eq(val).val();
+            ClassId = Classid;//将班级的id赋值给全局变量
+            if (ClassId != 0) {
+                $("#AddStualert").html("");
+                FandStuByClassorName();
+            } else {
+                $("#AddStualert").html("请选择班级");
+                $("#class").focus();
+            }
+
+        });
+        //点击关闭按钮清空模态框里的所有信息
+        $("#Esc")
+        {
+            $("#class option:first").prop("selected", 'selected');
+            $("#UpdateStuInfoalert").html("");
+            $("#UpdateClassalert").html("");
+        }
+        //班级下拉列表改变时获取班级下拉列表值（学生修改班级用）
+        $(".UpdateClass").change(function () {
+            var val = this.selectedIndex;
+            var Classid = $('option').eq(val).val();
+            newClass = Classid;//将班级的id赋值给全局变量
+        })
+        //学生修改班级提交按钮
+        $("#UpdateClassOK").click(function () {
+            var BeforeClass = beforeClass;//得到之前的班级
+            var NewClass = newClass;//得到选中的班级
+            if (NewClass == 0) {
+                $("#UpdateClassalert").html("*请选择目标班级");
+            }
+            else if (NewClass != 0)
+            {
+                $("#UpdateClassalert").html(" ");
+            }
+            else if (BeforeClass == NewClass) {
+                $("#UpdateClass").modal('hide');
+            }
+                var data = {
+                    BeforeClassName: BeforeClass,
+                    NewClassName: NewClass,
+                    StuId: StuID
+                }
+                $.post("/Student/UpdateClass", data, function (data) {
+                    if (data == "True") {
+                        alert("修改成功");
+                        $("#UpdateClass").modal('hide');
+                        Search(Conditions);
+                    }
+
+                })
+        });
+
+         //点击按钮是切换页
+        $(".pagination .number").click(function () {
+            pagenumber = this.innerText;
+            Search(Conditions);
+        });
+        //当输入框失去焦点是把内容传入后台进行查找判断该名称是否可用
+        $("#StudentContact").focus(function () {
+            $("#StudentContact").blur(function () {
+                var StuName = $("#StudentName").val();
+                var StuContact = $("#StudentContact").val();
+                if (ClassId == 0 && StuName == "" || StuName == null && StuContact == "" || StuContact == null) {
+                    $("#AddStualert").html("请选择班级和学生信息");
+
+                }
+                else if (StuName == "" || StuName == null) {
+                    $("#AddStualert").html("请选择输入学生姓名");
+
+                }
+                else if (StuContact == "" || StuContact == null) {
+                    $("#AddStualert").html("请选择输入学生联系方式");
+
+                }
+                else {
+                    var data = {
+                        Name: StuName,
+                        Contact: StuContact
+                    }
+                    $.post("/Student/AddSelect", data, function (value) {
+                        if (value == "True") {
+                            $("#AddStualert").html("*该学生已存在")
+                        }
+                        else if (value == "False") {
+                        }
+                        State = value;  //给状态赋值
+                    })
+                }
+
+
+            })
+        });
+        //添加学生
+        $("#OK").click(function () {
+            var StuName = $("#StudentName").val();
+            var StuContact = $("#StudentContact").val();
+            if (ClassId == 0 && StuName == "" || StuName == null && StuContact == "" || StuContact == null) {
+                $("#AddStualert").html("请选择班级和学生信息");
+
+            }
+            else if (StuName == "" || StuName == null) {
+                $("#AddStualert").html("请选择输入学生姓名和联系方式");
+
+            }
+            else if (StuContact == "" || StuContact == null) {
+                $("#AddStualert").html("请选择输入学生联系方式");
+
+            }
+            if (State == "True") {
+                $("#AddClassName").focus()//该学生名称已被注册。
+            } else if (State == "False") {
+                $("#AddStudent").modal('hide'); //关闭模态框
+                $("#AddStualert").html("");//不提示信息
+                var data = {
+                    Name: $("#StudentName").val(),//学生姓名
+                    Contact: $("#StudentContact").val(),//联系方式
+                    Classid: ClassId//班级id
+                }
+                $.post("/Student/Add", data, function (value) {
+                    if (value == "True") {
+                        $("#StudentName").val("");
+                        $("#StudentContact").val("");
+                        Search(Conditions);
+                        window.location.reload();
+                    }
+                    else {
+                        alert("添加错误,请联系管理员")
+                    }
+                })
+            }
+        });
+        //上一页
+        $("#last").click(function () {
+            if (pagenumber > 1) {
+                pagenumber--;
+                Search(Conditions);
+            }
+        });
+        //下一页
+        $("#next").click(function () {
+            if (pagenumber < MAXpagenumber) {
+                pagenumber++;
+                Search(Conditions);
+            }
+
+        });
+
+    })
+</script>

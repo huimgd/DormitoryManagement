@@ -1,0 +1,424 @@
+﻿@model IEnumerable<DormitoryManagement.Models.DormitoryInfo>
+@using PagedList
+@using PagedList.Mvc
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/LayoutPage.cshtml";
+}
+
+<link href="~/Content/MyClass.css" rel="stylesheet" />
+<link href="~/dist/css/jquery.page.css" rel="stylesheet" />
+<script src="~/dist/js/jquery.page.js"></script>
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-5 align-self-center">
+            <h4 class="page-title">楼栋管理</h4>
+        </div>
+        <div class="col-7 align-self-center">
+            <div class="d-flex align-items-center justify-content-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="#">首页</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">楼栋管理</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <button class="btn btn-sm" title="添加" data-toggle="modal" data-target="#myModal" id="Addbtn">
+            <img src="~/Image/plus.svg" />
+        </button>
+
+    </div>
+</div>
+<table id="tab" border="1" class="table table-condensed table-bordered table-striped"></table>
+@*分页*@
+<div id="Fy">
+    <div class="pagination " id="page"></div>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">
+                    添加楼栋
+                </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row"><label>楼号：</label><input type="text" placeholder="请输入楼号" id="FloorNumber" /><span style="color:#aa2323;font-size:1.2em" id="Number_alert"></span></div>
+                <div class="row"><label>楼层范围：</label><input type="text" class="MinLayer layerbox" oninput="value=value.replace(/[^\d]/g,'')" />--<input type="text" class="MaxLayer layerbox" oninput="value=value.replace(/[^\d]/g,'')" /><button id="LayerOk">确定</button><div id="qx"></div><span style="color:#aa2323;font-size:1.2em" id="LayeNumber_alert"></span></div>
+                <div id="LayerBox"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="AddDorEsc">
+                    关闭
+                </button>
+                <button type="button" class="btn btn-primary " id="OK">
+                    提交
+                </button>
+
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<!-- 停用楼栋模态框 -->
+<div class="modal fade" id="FloorTingyong">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title">停用楼栋</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                您确认要停用该楼吗？停用后与该楼相关的层将会停用,相关层内的寝室也将会被停用，寝室内的学生将被移出寝室。
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary " id="Tingyong_Ok">
+                    确认
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    var pagenumber = 1;
+    /**/
+    var State = "";//用于判断该楼是否已存在
+    var MAXpagenumber =0;//最大页数。
+    var Index = "";
+    var pd;//用来判断请求时否执行完
+    var Le;
+    /**/
+    // 搜索
+    function Search(Conditions) {
+        var data = {
+            page: pagenumber,
+            Value: Conditions
+        };
+        pd = $.post("/Floor/FindAll", data, function (data) {
+            MAXpagenumber = data.pg;
+            data = JSON.parse(data.ret);//把json字符串转换为json对象
+                ALLdata = data;
+              var item = "<tr><td>楼号</td><td>层数</td><td colspan='2'>操作</td></tr>";
+            var state = "";//用于判断当前班级是否启用
+            var mt = "";
+                //遍历集合
+                $.each(data, function (index, value) {
+                    if (value.State == 0) {
+                        state = "停用"//启用状态
+                        se = "NoSelected";
+                        mt = "data-toggle='modal' data-target='#FloorTingyong'";
+                    } else {
+                        se = "Selected"//停用状态
+                        state = "启用"
+                        mt = "";
+                    }
+
+                    item += "<tr>";
+                    item += "<td>" + value.FloorNumber + "</td>";
+                    item += "<td>" + value.LayerNumber + "</td>";
+                    item += "<td><a href='#' " + mt +" onclick='Assignment(" + index + ")'  >" + state + "</a></td>";
+                    item += "<td><a href='#'>层管理</a></td>";
+                    item += "</tr>";
+            });
+            if (data == "" || data == null) {
+                $("#tab").html("暂无该条数据");
+            } else {
+                $("#tab").html(item);
+                console.log(pagenumber);
+                console.log(MAXpagenumber);
+                //控制上一页和下一页的样式
+                if (pagenumber == 1) {
+                    $(".first").css("background-color", "#ced0d1");
+                    $(".prv ").css("background-color", "#ced0d1");
+                }
+                else {
+                    $(".first").css("background-color", "#fbfbfb");
+                    $(".prv ").css("background-color", "#fbfbfb");
+                }
+                if (pagenumber == MAXpagenumber) {
+                    $(".last").css("background-color", "#ced0d1");
+                    $(".next").css("background-color", "#ced0d1");
+                } else {
+                    $(".last").css("background-color", "#fbfbfb");
+                    $(".next").css("background-color", "#fbfbfb");
+                }
+                if (MAXpagenumber <= 1) {
+                    $("#Fy").css("display", "none");
+                } else {
+                    $("#Fy").css("display", "block");
+                }
+            }
+        });
+       
+    }
+    //联想词功能
+    function Lenovo(Conditions) {
+        var data = {
+            Value: Conditions
+        };
+        Le = $.get("/Floor/Lenovo", data, function (data) {
+            data = JSON.parse(data);
+            var item = "";
+            item += "<ul class='Le_ul'>";
+            $.each(data, function (index, value) {
+                item += "<li>" + value.FloorName + "</li>"
+            });
+            item += "</ul>";
+            $("#LenovoBox").html(item);
+        });
+    }
+    //状态按钮
+    function Assignment(index)
+    {
+        //赋值给全局变量
+        Index = index;
+        var sta = ALLdata[index].State;
+        if (sta == 1) {
+            update(Index)
+        }
+    }
+    
+    //修改状态
+    function update(Index) {
+        var s = ALLdata[Index].State;
+        var id = ALLdata[Index].Id;
+        if (s == 1) {
+            s = 0;
+        } else {
+            s = 1;
+        };
+        var data = {
+            id: id,
+            state: s
+        }
+        $.post("/Floor/UpdateState", data, function (value) {
+            if (value == "True") {
+                Search(Conditions);
+            }
+            else {
+                alert("失败")
+            }
+        })
+    };
+    
+    $(document).ready(function () {
+        //确认修改状态
+        $("#Tingyong_Ok").click(function () {
+            $("#FloorTingyong").modal('hide'); //关闭模态框
+            update(Index);
+        });
+        Search(Conditions);//查询所有班级
+        //请求执行完后再执行分页
+        $.when(pd).done(function () {
+            page();
+        });
+        //分页大法
+        function page() {
+            $("#page").Page({
+                totalPages: MAXpagenumber,//分页总数
+                liNums: 5,//分页的数字按钮数(建议取奇数)
+                activeClass: 'activP', //active 类样式定义
+                callBack: function (page) {
+                    pagenumber = page;
+                    Search(Conditions);
+                }
+            });
+        };
+
+        var CheckedLayer = 0;//用于保存选中的层数
+        var ALLLayer = 0;//用于保存所有可选的层
+        //点击关闭按钮清空数据
+        $("#AddDorEsc").click(function () {
+            $("#FloorNumber").val("");
+            $(".minLayer").val("");
+            $(".maxLayer").val("");
+        })
+        //添加按钮再次清空数据防止有残留数据
+        $("#Addbtn").click(function () {
+            $("#FloorNumber").val("");
+            $(".MinLayer").val("");
+            $(".MaxLayer").val("");
+            $("#LayerBox").html(" ");
+            $("#qx").html(" ");
+        })
+
+        //点击按钮是切换页
+
+        $(".pagination .number").click(function () {
+            pagenumber = this.innerText;
+            Search(Conditions);
+        })
+        //当输入框失去焦点是把内容传入后台进行查找判断该楼号名称是否可用
+        $("#FloorNumber").focus(function () {
+            $("#FloorNumber").blur(function () {
+                var data = {
+                    Number: $("#FloorNumber").val(),
+                }
+                $.post("/Floor/AddSelect", data, function (value) {
+                    if (value == "True") {
+                        $("#Number_alert").html("*该楼已存在")
+                    }
+                    else if (value == "False") {
+                        $("#Number_alert").html("")
+                    }
+                    State = value;  //给状态赋值
+                })
+
+            })
+        })
+        //点击楼层范围确认按钮
+        $("#LayerOk").click(function () {
+
+          var Min=parseInt($(".MinLayer").val());//得到输入的最小值
+            var Max = parseInt($(".MaxLayer").val());//得到输入的最大值
+             //当楼层范围值发生改变是清空楼选择按钮
+            $(".MinLayer").bind("input propertychange", function (event) {
+                $("#LayerBox").html(" ");
+                $("#qx").html(" ");//不显示全选按钮
+            });
+            $(".MaxLayer").bind("input propertychange", function (event) {
+                $("#LayerBox").html(" ");
+                $("#qx").html(" ");//不显示全选按钮
+            });
+            if (Min > Max) {
+                $("#LayeNumber_alert").html("*请从低到高依次输入！")
+            }
+            else if (Min == "") {
+                $("#LayeNumber_alert").html("*请输入最低层")
+            } else if (Max == "") {
+                $("#LayeNumber_alert").html("*请输入最高层")
+            } else
+            {
+                var item = "";
+                for (var i = Min; i <= Max; i++) {
+                    item += "<button class='left Layer' value=" + i + ">"+i+"</button>"
+                }
+                $("#LayerBox").html(item);//显示可选层
+
+                var quanxuan = "<input type='button' id='ALLLayerbtn'value='全选' />";
+                $("#qx").html(quanxuan);//显示全选按钮
+                $("#LayeNumber_alert").html("");//清空提示信息
+
+                //得到所有可选的层数
+                ALLLayer = $("#LayerBox").children().length;
+
+                $(".Layer").click(function () {
+                    $(this).toggleClass("layer")//选中后修改颜色
+                    CheckedLayer = $("#LayerBox").children(".layer").length;
+                    if (CheckedLayer == ALLLayer)//若选中层数等于所有可选层数按钮变为取消全选
+                    {
+
+                        $("#ALLLayerbtn").val("取消全选")
+                        $("#ALLLayerbtn").click(function () {
+                            $(".Layer").removeClass("layer")
+
+                        });
+                    } else {
+                        $("#ALLLayerbtn").val("全选")
+                        $("#ALLLayerbtn").click(function () {
+                            CheckedLayer = ALLLayer;
+                            $(".Layer").addClass("layer");
+
+                        });
+                    };
+                });
+
+                //全选按钮
+                $("#ALLLayerbtn").click(function () {
+                    if (CheckedLayer == ALLLayer) {
+                        $("#ALLLayerbtn").val("全选")
+                        CheckedLayer = 0;
+                        $(".Layer").removeClass("layer");
+                    }
+                    else {
+                        $("#ALLLayerbtn").val("取消全选")
+                        CheckedLayer = ALLLayer;
+                        $(".Layer").addClass("layer");
+                    }
+
+                 });
+
+
+
+            }
+        })
+
+        //添加楼栋
+        $("#OK").click(function () {
+            Number = $("#FloorNumber").val();
+            if (Number == "") {
+                $("#Number_alert").html("*请输入楼号")
+
+            }
+            if (".MinLayer" == "" || ".MaxLayer" == "")
+            {
+            $("#LayeNumber_alert").html("*请输入楼层范围")
+            }
+            if (State == "True") {
+                $("#FloorNumber").focus()//该寝室名称已被注册。
+            } else if (State == "False" && Number != "") {
+                $("#myModal").modal('hide'); //关闭模态框
+                $("#Number_alert").html("");//不提示信息
+                $("#LayeNumber_alert").html("")
+                var Layer = new Array//获取选中的层
+
+                var btns = $("#LayerBox>button.layer");
+                $.each(btns, function (index, value) {
+
+                    Layer[index] = value.value;
+
+                });
+                console.log(Layer);
+                var data = {
+                    FloorNumber: Number,
+                    Layer: Layer
+                }
+                $.post("/Floor/Add", data, function (value) {
+                    if (value == "True") {
+                        $("#FloorNumber").val("");
+                        $(".minLayer").val("");
+                        $(".maxLayer").val("");
+                        Search(Conditions);
+                        window.location.reload();
+                    }
+                    else {
+                        alert("添加错误,请联系管理员")
+                    }
+                })
+            }
+        });
+        //上一页
+        $("#last").click(function () {
+            if (pagenumber > 1) {
+                pagenumber--;
+                Search(Conditions);
+            }
+        });
+        //下一页
+        $("#next").click(function () {
+            if (pagenumber < MAXpagenumber) {
+                pagenumber++;
+                Search(Conditions);
+            }
+
+        });
+
+    });
+</script>

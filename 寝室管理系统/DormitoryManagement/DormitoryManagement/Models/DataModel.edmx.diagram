@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="b0f3d850a2354b8e95e00a08b5f62b92" Name="Diagram1" ZoomLevel="83" >
+        <EntityTypeShape EntityType="DataModel.DormitoryInfo" Width="1.5" PointX="6.375" PointY="0.5" />
+        <EntityTypeShape EntityType="DataModel.Student" Width="1.5" PointX="3.625" PointY="0.5" />
+        <EntityTypeShape EntityType="DataModel.StudentRecord" Width="1.5" PointX="0.5" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="DataModel.Class" Width="1.5" PointX="9.375" PointY="3.125" />
+        <EntityTypeShape EntityType="DataModel.ClassRecord" Width="1.5" PointX="6" PointY="3.5" />
+        <AssociationConnector Association="DataModel.ClassClassRecord" />
+        <AssociationConnector Association="DataModel.StudentStudentRecord" />
+        <AssociationConnector Association="DataModel.DormitoryInfoStudentRecord" />
+        <AssociationConnector Association="DataModel.StudentClassRecord" />
+        <EntityTypeShape EntityType="DataModel.DetailsFloor" Width="1.5" PointX="11.25" PointY="0.5" />
+        <EntityTypeShape EntityType="DataModel.DetailsLayer" Width="1.5" PointX="8.875" PointY="0.625" />
+        <AssociationConnector Association="DataModel.DetailsFloorDetailsLayer" />
+        <AssociationConnector Association="DataModel.DetailsLayerDormitoryInfo" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

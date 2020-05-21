@@ -1,0 +1,712 @@
+﻿@model IEnumerable<DormitoryManagement.Models.DormitoryInfo>
+@using PagedList
+@using PagedList.Mvc
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/LayoutPage.cshtml";
+}
+
+<link href="~/Content/MyClass.css" rel="stylesheet" />
+<link href="~/dist/css/jquery.page.css" rel="stylesheet" />
+<script src="~/dist/js/jquery.page.js"></script>
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-5 align-self-center">
+            <h4 class="page-title">寝室管理</h4>
+        </div>
+        <div class="col-7 align-self-center">
+            <div class="d-flex align-items-center justify-content-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="#"></a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">寝室管理</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <button class="btn btn-sm" title="添加" data-toggle="modal" data-target="#myModal" id="Addbtn">
+            <img src="~/Image/plus.svg" />
+        </button>
+        <button class="btn btn-primary btn-md" data-toggle="modal" data-target="#Upload">
+            批量添加
+        </button>
+        <div class="pull-right screen  ml-auto">
+            <span class="left">楼栋筛选:</span>
+            <select id="Floor_Screen" class="right"></select>
+        </div>
+        <!-- 批量添加 -->
+        <div class="modal fade" id="Upload" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel">
+                            批量添加寝室
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="bulkDlg">
+                            <div class="col-xs-12">
+                                <form class="form-horizontal" id="bulkForm" enctype="multipart/form-data">
+
+                                    <div class="form-group">
+
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-sm-9">
+                                            <input type="file" id="BulkXls" name="BulkXls" />
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">
+                            关闭
+                        </button>
+                        <button type="button" class="btn btn-primary" id="sub">
+                            提交
+                        </button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+    </div>
+</div>
+<table id="tab" border="1" class="table table-condensed table-bordered table-striped"></table>
+@*分页*@
+<div id="Fy">
+    <div class="pagination " id="page"></div>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">
+                    添加寝室
+                </h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <label for="Floor">楼号:</label>
+                    <select id="Floor" style="border-radius:5px;" name="Floor"></select>
+                </div>
+                <div class="row">
+                    <label for="Layers">层:</label>
+                    <select id="Layers" style="border-radius:5px;" name="Layers"></select>
+
+                </div>
+                <div class="row"> 寝室编号：<input type="text" id="DormitoryNumber" /><span style="color:#aa2323;font-size:1.2em" id="Number_alert"></span></div>
+                <div class="row">可容纳人数： <input type="text" id="DormitoryCapacity" /><span style="color:#aa2323;font-size:1.2em" id="Capacity_alert"></span></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="AddDorEsc">
+                    关闭
+                </button>
+                <button type="button" class="btn btn-primary " id="OK">
+                    提交
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<!-- 添加学生模态框 -->
+<div class="modal fade" id="AddStudent">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width:650px;">
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title" id="StudentManagementtitle"></h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 AddStuLeft">
+                        <div class="row title">已有学生</div>
+                        <div class="row"><table id="tabl" class="table table-condensed table-bordered table-striped"></table></div>
+                        <div class="row"><button class="Mobile_bedroom right btn btn-default" id="outbtn">移出该寝室</button></div>
+                    </div>
+                    @*添加学生*@
+                    <div class="col-md-6 AddStuRight">
+                        <div class="row title">添加学生</div>
+                        <div class="row" style="margin-left:1px">
+                            <label for="class">班级:</label>
+                            <select id="class" style="border-radius:5px;" name="class"></select>
+                        </div>
+                        <div class="row" style="margin-top:4px;margin-left:1px">
+                            <label>学生姓名:</label>
+                            <div>
+                                <input type="text" id="Stu_Name" class="searchinput left" />
+                                <span class="searchbtn" id="Searchbtn"><img src="~/Image/search.svg" /></span>
+                            </div>
+                        </div>
+                        <div class="row"><span style="margin-left:25%; color:#aa2323;font-size:0.8em;height:10px" id="stu_alert"></span></div>
+                        <div class="StuContent row pre-scrollable">
+                            <table id="Stutable" border="1" class="table table-condensed table-bordered table-striped"></table>
+                        </div>
+                        <div class="row"><button class="Mobile_bedroom right btn btn-default" id="Movebtn" >移动至该寝室</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    var State = "";//用于判断寝室名是否可用状态
+    var StuState = "";//用于判断学生名是否可用状态
+    var pagenumber = 1;//起始页码
+    var Stupagenumber = 1;//寝室已有学生起始页码
+    var MAXpagenumber =0;//最大页数。
+    var MAXStupagenumber=1;//寝室已有学生最大页数@*@((int)ViewData["StuMessage"])*@
+    var ALLdata = "";//用于保存后台返回的数据
+    var FloorId = 0;//用于判断楼层
+    var LayerId = 0;//用于判断楼层
+    var ClassId = 0;//用于保存班级下拉框的值
+    var Dormitoryid = 0;
+    var FloorName = "";//用于保存楼号
+    var pd//用来判断请求时否执行完
+    var Le//判断联想词
+    //实时查询学生信息
+    var cpLock = false;
+    $("#Stu_Name").on('compositionstart', function () {
+        // 输入汉语拼音时锁住搜索框，不进行搜索，或者从汉语拼音转到字母时也可触发
+        cpLock = true;
+    });
+    $("#Stu_Name").on('compositionend', function () {
+        // 结束汉语拼音输入并生成汉字时，解锁搜索框，进行搜索
+        cpLock = false;
+        FandStuByClassorName();
+    });
+    //点击搜索按钮的时候进行搜索
+    $("#Searchbtn").click(function () {
+        FandStuByClassorName();
+    });
+    //根据学生姓名或者班级查询学生
+    function FandStuByClassorName() {
+        var keyword = $("#Stu_Name").val();
+        var data = {
+            Classid: ClassId,
+            StudentName: keyword
+        }
+        $.post("/Dormitory/SelectStuByNameorClass", data, function (data) {
+            data = JSON.parse(data);//把json字符串转换为json对象
+            var qs = "空"//用于存放学生寝室编号
+            var bj="空"//用于存放班级编号
+            var item = "<tr><td>选择</td><td>姓名</td><td>寝室</td><td>班级</td></tr>"
+            //遍历集合
+            $.each(data, function (index, value) {
+                if (value.srCheckinTime != null) {
+                    qs = value.Number;
+                }
+                if (value.crCheckinTime != null)
+                {
+                    bj = value.CLassName
+
+                }
+                item += "<tr>";
+                item += "<td><label><input Id='ddx' type='checkbox' name='IntoStu' class='rediobtn' value=" + value.Id + "></label></td>";
+                item += "<td>" + value.Name + "</td>";
+                item += "<td>" + qs + "</td>";
+                item += "<td>" + bj + "</td>";
+                item += "</tr>";
+            });
+            $("#Stutable").html(item);
+        });
+    }
+     
+   
+    // 搜索
+    function Search(Conditions) {
+        if (FloorName != "请选择楼栋编号" || Conditions != "") {
+            Conditions += " ";
+            Conditions += FloorName;
+        }
+        var data = {
+            page: pagenumber,
+            Value: Conditions
+        };
+        pd = $.post("/Dormitory/FindAll", data, function (data) {
+            MAXpagenumber = data.pg;
+            data = JSON.parse(data.ret);//把json字符串转换为json对象
+            ALLdata = data;
+           var item = "<tr><td>选择</td><td>所在楼号</td><td>所在层</td><td>@Html.DisplayNameFor(model => model.Number)</td><td>@Html.DisplayNameFor(model => model.Capacity)</td><td>已有学生</td><td colspan='3'>操作</td></tr>";
+            var state = "";//用于判断当前班级是否启用
+            //遍历集合
+            $.each(data, function (index, value) {
+                var floornumber = { FLoorNumber: value.FloorName };
+                if (value.State == 0) {
+                    state = "停用"//启用状态
+                    se = "NoSelected";
+                } else {
+                    se = "Selected"//停用状态
+                    state = "启用"
+                }
+                if (value.StudentId != null) {
+                    asx = "Selected";//如果寝室还有学生就不能停用
+                } else {
+                    asx = "NoSelected";
+                }
+                if (value.StudentId != null) {
+                    Stu = value.StudentId;
+                } else {
+                    Stu = "无"
+                }
+                if (value.FloorState != 0) {
+                    state = "改寝室所在楼已被停用"
+                    asx = "Selected";
+                }
+                item += "<tr>";
+                item += "<td><label><input Id='dx' type='checkbox' name='personality' class='rediobtn' value=" + value.Id + "></label></td>";
+                item += "<td>" + value.FloorName + "</td>";
+                item += "<td>" + value.LayerNumber + "</td>";
+                item += "<td>" + value.Number + "</td>";
+                item += "<td>" + value.Capacity + "</td>";
+                item += "<td>" + Stu + "</td>";
+                item += "<td><a href='#'onclick='update(" + index + ")' class='" + asx + " '>" + state + "</a></td>";
+                item += "<td><a href='#' class=" + se + " onclick='StudentManagement(" + index + ")'  class='Selected'data-toggle='modal' data-target='#AddStudent'>学生管理</a></td>";
+                item += "</tr>";
+            });
+            if (data == "" || data == null) {
+                $("#tab").html("暂无数据");
+                $("#Fy").css("display", "none");
+            } else {
+                $("#tab").html(item);
+                //控制上一页和下一页的样式
+                if (pagenumber == 1) {
+                    $(".first").css("background-color", "#ced0d1");
+                    $(".prv ").css("background-color", "#ced0d1");
+                }
+                else {
+                    $(".first").css("background-color", "#fbfbfb");
+                    $(".prv ").css("background-color", "#fbfbfb");
+                }
+                if (pagenumber == MAXpagenumber) {
+                    $(".last").css("background-color", "#ced0d1");
+                    $(".next").css("background-color", "#ced0d1");
+                } else {
+                    $(".last").css("background-color", "#fbfbfb");
+                    $(".next").css("background-color", "#fbfbfb");
+                }
+                if (MAXpagenumber <= 1) {
+                    $("#Fy").css("display", "none");
+                } else {
+                    $("#Fy").css("display", "block");
+                }
+               
+            }
+        });
+
+    }
+    //联想词功能
+    function Lenovo(Conditions) {
+        var data = {
+            Value: Conditions
+        };
+        Le = $.get("/Dormitory/Lenovo", data, function (data) {
+            data = JSON.parse(data);
+            var item = "";
+            item += "<ul class='Le_ul'>";
+            $.each(data, function (index, value) {
+                item += "<li>" + value.Number + "</li>"
+            });
+            item += "</ul>";
+            $("#LenovoBox").html(item);
+        });
+    };
+    //修改状态
+    function update(index) {
+        var s = ALLdata[index].State;
+        if (s == 1) {
+            s = 0;
+        } else {
+            s = 1;
+        };
+        var data = {
+            id: ALLdata[index].Id,
+            state: s
+        }
+        $.post("/Dormitory/UpdateState",data, function (value) {
+            if (value == "True") {
+                Search(Conditions);
+            }
+            else {
+                alert("失败")
+            }
+
+        })
+    };
+    //查询寝室已有学生
+    function SelectStu(id) {
+        var data = {
+            DormitoryId: id
+        }
+        $.get("/Dormitory/FindStu", data, function (data) {
+            var item = "";
+             item = "<tr><td>选择</td><td>学生姓名</td><td>联系方式</td></tr>";
+            if (data.length < 1) {
+                $("#outbtn").css("display", "none")
+                item ="<tr><td>该寝室暂无学生</td></tr>"
+            } else {
+                $("#outbtn").css("display", "block")
+            }
+            //遍历集合
+            $.each(data, function (index, value) {
+                item += "<tr>";
+                item += "<td><label><input  type='checkbox' name='OutStu' class='rediobtn' value=" + value.Id + "></label></td>";
+                item += "<td>" + value.Name + "</td>";
+                item += "<td>" + value.Contact + "</td>";
+                item += "</tr>";
+            });
+            $("#tabl").html(item);
+        });
+
+    }
+    //学生管理按钮
+    function StudentManagement(index) {
+        var Number = ALLdata[index].Number;
+        $("#StudentManagementtitle").html(Number);//给添加学生的标题添加寝室编号
+        var id = ALLdata[index].Id;//得到班级Id
+        FandStuByClassorName();
+        SelectStu(id);
+        Dormitoryid = id;
+        Determine_Capactiy(Dormitoryid);
+    }
+    //判断寝室是否已满
+    function Determine_Capactiy(Dormitoryid) {
+        var data = {
+            id:Dormitoryid
+        }
+        $.post("/Dormitory/Determine_Capactiy", data, function (data) {
+            if (data == "True") {
+                $("#Movebtn").removeClass("Selected");
+            } else {
+                $("#Movebtn").addClass("Selected");
+            }
+        })
+    }
+    //查询所有班级
+    function FindAllClass() {
+        $.get("/Dormitory/FindALLClass", "", function (data) {
+           // data = JSON.parse(data);//把json字符串转换为json对象
+            var count = Object.keys(data).length;//得到班级个数
+            var item = "";
+            item += "<option value='0'>查询所有</option>";
+            //遍历集合
+            $.each(data, function (index, value) {
+                item += "<option value="+value.Id+">" + value.ClassName + "</option>";
+            });
+            $("#class").html(item);
+        });
+    }
+   
+    //查询所有的楼
+    function FindAllFloor() {
+        $.get("/Dormitory/FindAllFloor"," ", function (data) {
+            data = JSON.parse(data);//把json字符串转换为json对象
+            var count = Object.keys(data).length;//得到楼栋数
+            var item = "";
+            item += "<option value='0'>请选择楼栋编号</option>";
+            //遍历集合
+            $.each(data, function (index, value) {
+                item += "<option value=" + value.Id + ">" + value.FloorName + "</option>";
+            });
+            $("#Floor").html(item);
+            $("#Floor_Screen").html(item);
+        });
+    }
+   
+    $(document).ready(function () {
+       
+        FindAllFloor();//查询所有楼
+         Search(Conditions);//查询所有班级
+        //请求执行完后再执行分页
+        $.when(pd).done(function () {
+            page();
+        });
+        //分页大法
+        function page() {
+            $("#page").Page({
+                totalPages: MAXpagenumber,//分页总数
+                liNums: 5,//分页的数字按钮数(建议取奇数)
+                activeClass: 'activP', //active 类样式定义
+                callBack: function (page) {
+                    pagenumber = page;
+                    Search(Conditions);
+                }
+            });
+        };
+        //批量添加上穿excel文件
+        $("#sub").click(function () {
+            var formData = new FormData();
+            formData.append("BulkXls", document.getElementById("BulkXls").files[0]);
+            $.ajax({
+                url: "/Dormitory/UploadXls",
+                type: "POST",
+                data: formData,
+                /**
+                *必须false才会自动加上正确的Content-Type
+                */
+                contentType: false,
+                /**
+                * 必须false才会避开jQuery对 formdata 的默认处理
+                * XMLHttpRequest会对 formdata 进行正确的处理
+                */
+                processData: false,
+                success: function (data) {
+                    var pd = data.split(":")[0]
+                    if (pd == "no") {
+                        alert(data);
+                    }
+                },
+                error: function () {
+                    alert("内部错误")
+                    //执行失败
+                }
+            });
+        });
+        //移至该寝室按钮，批量操作学生
+        $("#Movebtn").click(function () {
+            //jquery获取复选框值
+            var chk_value = [];//定义一个数组
+            $('input[name="IntoStu"]:checked').each(function () {//遍历每一个名字为interest的复选框，其中选中的执行函数
+                chk_value.push($(this).val());//将选中的值添加到数组chk_value中
+            });
+            var data = {
+                list: chk_value,
+                Dormitoryid: Dormitoryid
+            }
+            $.post("/Dormitory/IntoStu", data, function (data) {
+                if (data == "True") {
+                   
+                    alert("移动成功")
+                } else {
+                    alert("移动失败，该寝室已满，多出的人将不会执行移动")
+                }
+                FandStuByClassorName();
+                SelectStu(Dormitoryid);
+                Search(Conditions);
+                Determine_Capactiy(Dormitoryid);
+            });
+        })
+        //批量移除
+        $("#outbtn").click(function () {
+            var chk_value = [];//定义一个数组
+            $('input[name="OutStu"]:checked').each(function () {//遍历每一个名字为interest的复选框，其中选中的执行函数
+                chk_value.push($(this).val());//将选中的值添加到数组chk_value中
+            });
+            var data = {
+                list: chk_value,
+                Dormitoryid: Dormitoryid
+            }
+            $.post("/Dormitory/OutStu", data, function (data) {
+                if (data == "True") {
+                    alert("移动成功")
+                } else {
+                    alert("移动失败")
+                }
+                FandStuByClassorName();
+                SelectStu(Dormitoryid);
+                Determine_Capactiy(Dormitoryid);
+                Search(Conditions);
+            });
+        })
+        //点击关闭按钮清空数据
+        $("#AddDorEsc").click(function () {
+            $("#Floor option:first").prop("selected", 'selected');
+           // $("#Layers option:first").prop("selected", 'selected');
+            FloorId = 0;
+            $("#DormitoryNumber").val("");
+            $("#DormitoryCapacity").val("");
+        })
+        //添加寝室按钮
+        $("#Addbtn").click(function () {
+            $("#Floor option:first").prop("selected", 'selected');
+          //  $("#Layers option:first").prop("selected", 'selected');
+            FloorId = 0;
+            $("#DormitoryNumber").val("");
+            $("#DormitoryCapacity").val("");
+            FindAllFloor() //查询所有楼
+            if (FloorId == 0) {//若没选择楼则不可选择层
+                $("#Layers").addClass("Selected ");
+            }
+            if (LayerId == 0)//若层未选择不可填入寝室信息
+            {
+                $("#DormitoryNumber").addClass("Selected ");
+                $("#DormitoryCapacity").addClass("Selected");
+            }
+            FindAllLayer(FloorId);
+        })
+        FindAllClass();//查询出所有班级
+        //层下拉列表改变时更改输入框样式
+        $("#Layers").change(function () {
+            LayerId = $('select[name=Layers]').val();;//获取下拉列表的值
+
+            if (LayerId != 0) {
+                $("#DormitoryNumber").removeClass("Selected ");
+                $("#DormitoryCapacity").removeClass("Selected");
+            }
+        })
+        //楼号下拉列表改变后获取层号
+        $("#Floor").change(function () {
+            var val = this.selectedIndex;
+            FloorId = $('select[name=Floor]').val();;//获取下拉列表的值
+            if (FloorId != 0)
+            {
+                $("#Layers").removeClass("Selected ");
+            }
+            FindAllLayer(FloorId);
+        })
+        //楼号下拉列表改变
+        $("#Floor_Screen").change(function () {
+            var val = this.selectedIndex;
+           FloorName = $('option').eq(val).html();
+            Search(Conditions)
+        });
+        //根据楼号查层
+        function FindAllLayer(FloorId) {
+            var data = {
+                FloorId: FloorId
+            }
+            $.get("/Dormitory/FindAllLayer", data, function (data) {
+                data = JSON.parse(data);//把json字符串转换为json对象
+                var count = Object.keys(data).length;//得到楼栋数
+                var item = "";
+                item += "<option value='0'>请选择层号</option>";
+                //遍历集合
+                $.each(data, function (index, value) {
+                    item += "<option value=" + value.Id + ">" + value.LayerNumber + "</option>";
+                });
+                $("#Layers").html(item);
+            });
+        }
+        //班级下拉列表改变时获取班级下拉列表值
+        $("#class").change(function () {
+            var Classid = $('select[name=class]').val();
+            ClassId = Classid;//将班级的id赋值给全局变量
+            $("#stu_alert").html("");
+            FandStuByClassorName();
+        })
+        //当输入框失去焦点是把内容传入后台进行查找判断该名称是否可用
+        $("#Stu_Name").focus(function () {
+            $("#Stu_Name").blur(function () {
+                FandStuByClassorName();
+            })
+        })
+        ////添加学生确认按钮
+        //$("#Stu_OK").click(function () {
+        //    if (StuState == "True") {
+        //        var data = {
+        //            StuName: $("#Stu_Name").val(),
+        //            DorNum: $("#StudentManagementtitle").val()
+        //        }
+        //        $.get("/Dormitory/Addstu", data, function (data) {
+        //            if (data == "True") {
+        //                alert("添加成功")
+        //                Search(Conditions);
+        //            }
+        //            else {
+        //                alert("添加失败")
+        //            }
+        //        });
+        //        $("#AddStudent").modal('hide'); //关闭模态框
+        //        $("#stu_alert").html("");//不提示信息
+        //    }
+        //});
+        //点击按钮是切换页
+        $(".pagination .number").click(function () {
+            pagenumber = this.innerText;
+            Search(Conditions);
+        })
+        Search(Conditions);
+        //当输入框失去焦点是把内容传入后台进行查找判断该寝室名称是否可用
+        $("#DormitoryNumber").focus(function () {
+            $("#DormitoryNumber").blur(function () {
+                var data = {
+                    Number: $("#DormitoryNumber").val(),
+                    Floor: FloorId,
+                    Layer: LayerId
+                }
+                $.post("/Dormitory/AddSelect",data, function (value) {
+                    if (value == "True") {
+                        $("#Number_alert").html("*该寝室已存在")
+                    }
+                    else if (value == "False") {
+                        $("#Number_alert").html("")
+                    }
+                    State = value;  //给状态赋值
+                })
+
+            })
+        })
+        //添加寝室
+        $("#OK").click(function () {
+            Capacity = $("#DormitoryCapacity").val();
+            Number = $("#DormitoryNumber").val();
+            if (Capacity == null || Capacity == "") {
+                $("#Capacity_alert").html("*请输入寝室可容纳人数")
+
+            }
+            if (Number == null || Number == "") {
+                $("#Number_alert").html("*请输入寝室编号")
+
+            }
+            if (State == "True") {
+                $("#DormitoryNumber").focus()//该寝室名称已被注册。
+            } else if (State == "False" && Number != "" && Capacity != "") {
+
+                $("#myModal").modal('hide'); //关闭模态框
+                $("#Number_alert").html("");//不提示信息
+                var data = {
+                    DetailsLayerId: LayerId,
+                    Number: $("#DormitoryNumber").val(),
+                    Capacity: $("#DormitoryCapacity").val()
+                }
+                $.post("/Dormitory/Add", data, function (value) {
+                    if (value == "True") {
+                        $("#DormitoryNumber").val("");
+                        $("#DormitoryCapacity").val("");
+                        Search(Conditions);
+                        window.location.reload();
+                    }
+                    else {
+                        alert("添加错误,请联系管理员")
+                    }
+                })
+            }
+        });
+        //上一页
+        $("#last").click(function () {
+            if (pagenumber > 1) {
+                pagenumber--;
+                Search(Conditions);
+            }
+        });
+        //下一页
+        $("#next").click(function () {
+            if (pagenumber < MAXpagenumber) {
+                pagenumber++;
+                Search(Conditions);
+            }
+
+        });
+
+    });
+</script>

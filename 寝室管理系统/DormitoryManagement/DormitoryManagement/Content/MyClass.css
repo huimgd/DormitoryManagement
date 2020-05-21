@@ -1,0 +1,118 @@
+﻿
+a {
+    text-decoration: none;
+    color: cornflowerblue
+}
+a:hover {
+        text-decoration: none;
+        color:cornflowerblue;
+
+}
+.Selected {
+    pointer-events: none;
+    color: #ced0d1
+}
+    .Selected:hover {
+        color: #ced0d1; pointer-events: none;
+    }
+.NoSelected {
+    color: cornflowerblue
+}
+.rediobtn {
+    width: 20px;
+    height: 20px;
+    background-color:red;
+}
+.title{
+    text-align:center;
+}
+.searchbtn img{
+    height:25px;
+    width:25px;
+}
+.searchbtn {
+    display: block;
+    width: 30px;
+    height: 30px;
+    position: relative;
+    right:-120px;
+}
+.searchinput {
+    position: fixed;
+    border-radius: 5px;
+    height: 30px;
+    width: 150px;
+}
+.left{
+    float:left;
+}
+.right{
+    float:right;
+}
+.AddStuLeft {
+    border-right: solid 1px #727272;
+    float: left;
+}
+.AddStuRight {
+    border-left: solid 1px #727272;
+    float: left;
+}
+.StuContent {
+    margin-top: 10px;
+    margin-left: 1px;
+    height: 400px;
+    width: 290px;
+    border: 1px solid #ced0d1;
+    box-shadow: darkgrey 0px 0px 2px 2px inset;
+    border-radius:5px;
+}
+.Mobile_bedroom{
+    border-radius:5px;
+    margin-left:55%;
+    margin-top:5px;
+}
+.layerbox {
+    height: 30px;
+    width: 30px;
+    text-align:center;
+    line-height:30px;
+}
+#LayerBox{
+   max-width:300px;
+   
+}
+.Layer{
+    width:30px;
+    text-align:center;
+}
+.layer {
+    background-color: red;
+}
+#LenovoBox{
+    background-color:#dfe1e4;
+    width:40%;
+   margin-top:-1px;
+   font-size:1.2em;
+}
+    #LenovoBox ul{
+        margin:0px;padding:0px; 
+        width:100%;
+    }
+    #LenovoBox ul li {
+        padding-left:5%;
+        width:100%;
+        list-style: none;
+    }
+ #LenovoBox ul li:hover{
+     cursor:pointer;
+        background-color:#bdc6d8
+    }
+.screen{
+    display:flex;
+    height:40px;width:170px;
+    justify-content:space-around;
+    align-items:center
+}
+.screen span{
+    font-size:15px;
+}

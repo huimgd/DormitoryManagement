@@ -1,0 +1,160 @@
+﻿@model IEnumerable<DormitoryManagement.Models.ClassRecord>
+@using PagedList
+@using PagedList.Mvc
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/LayoutPage.cshtml";
+}
+<link href="~/Content/MyClass.css" rel="stylesheet" />
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-5 align-self-center">
+            <h4 class="page-title">学生班级记录</h4>
+        </div>
+        <div class="col-7 align-self-center">
+            <div class="d-flex align-items-center justify-content-end">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="#">首页</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">学生班级记录</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<table id="tab" border="1" class="table table-condensed table-bordered table-striped"></table>
+@*分页*@
+<div id="Fy">
+    <div class="pagination " id="page"></div>
+</div>
+<script>
+    var State = "";//用于判断班级名是否可用状态
+    var pagenumber = 1;//起始页码
+    var MAXpagenumber = 0;//数据总条数
+    var pd;//用于判断请求是否已经完成
+    var pagenumber = 1;//起始页码
+    var ALLdata = "";//用于保存后台返回的数据
+    var Le;
+    var sds = false;
+    //var pageCopy;
+  
+    // 搜索
+    function Search(Conditions) {
+        var data = {
+            Value: Conditions,
+            page: pagenumber
+        };
+        pd = $.post("/ClassRecord/FindAll", data, function (data) {
+            MAXpagenumber = data.pg;
+            data = JSON.parse(data.ret);//把json字符串转换为json对象
+            ALLdata = data;
+            var item = "<tr><td>学生姓名</td><td>学生联系方式</td><td>班级名称</td><td>入班时间</td><td>离班时间</td></tr>";
+            //var state = "";//用于判断当前班级是否启用
+            //pageCopy(MAXpagenumber);
+            //遍历集合
+            $.each(data, function (index, value) {
+                var DepartureTime = "";
+                if (value.DepartureTime == null) {
+                    DepartureTime = "未更换";
+                }
+                else {
+                    var Dtime = value.DepartureTime;
+                    var nr = Dtime.match(/(\S*)T/)[1];
+                    DepartureTime = nr;
+                }
+                var Ctime = value.CheckinTime;
+                var nr = Ctime.match(/(\S*)T/)[1];
+                CheckinTime = nr;
+                item += "<tr>";
+                item += "<td>" + value.Name + "</td>";
+                item += "<td>" + value.Contact + "</td>";
+                item += "<td>" + value.ClassName + "</td>";
+                item += "<td>" + CheckinTime + "</td>";
+                item += "<td>" + DepartureTime + "</td>";
+                item += "</tr>";
+            });
+            if (data == "" || data == null) {
+                $("#tab").html("暂无该条数据");
+                $("#Fy").css("display", "none");
+            } else {
+                $("#tab").html(item);
+                //控制上一页和下一页的样式
+                if (pagenumber == 1) {
+                    $(".first").css("background-color", "#ced0d1");
+                    $(".prv ").css("background-color", "#ced0d1");
+                }
+                else {
+                    $(".first").css("background-color", "#fbfbfb");
+                    $(".prv ").css("background-color", "#fbfbfb");
+                }
+                if (pagenumber == MAXpagenumber) {
+                    $(".last").css("background-color", "#ced0d1");
+                    $(".next").css("background-color", "#ced0d1");
+                } else {
+                    $(".last").css("background-color", "#fbfbfb");
+                    $(".next").css("background-color", "#fbfbfb");
+                }
+                if (MAXpagenumber == 1) {
+                    $("#Fy").css("display", "none");
+                } else {
+                    $("#Fy").css("display", "block");
+                }
+            }
+
+        });
+
+    }
+    //联想词功能
+    function Lenovo(Conditions) {
+        var data = {
+            Value: Conditions
+        };
+        Le = $.get("/ClassRecord/Lenovo", data, function (data) {
+            data = JSON.parse(data);
+            var item = "";
+            item += "<ul class='Le_ul'>";
+            $.each(data, function (index, value) {
+                item += "<li>" + value.Name + "</li>"
+            });
+            item += "</ul>";
+            $("#LenovoBox").html(item);
+        });
+    }
+    $(document).ready(function () {
+        Search(Conditions)//查询所有学生
+        //分页
+        function page() {
+            $("#page").Page({
+                totalPages: MAXpagenumber,//分页总数
+                liNums: 5,//分页的数字按钮数(建议取奇数)
+                activeClass: 'activP', //active 类样式定义
+                callBack: function (page) {
+                    pagenumber = page;
+                    Search(Conditions)
+                }
+            });
+        };
+
+        ////请求执行完后再执行分页
+            $.when(pd).done(function () {
+                page();
+        });
+        $("#Search_input").blur(function () {
+                $.when(pd).done(function () {
+                    page();
+                });   
+            
+        })
+        $("#Search_input").on('compositionend', function () {
+            $.when(pd).done(function () {
+                page();
+            });  
+        })
+        
+    })
+   
+    
+</script>

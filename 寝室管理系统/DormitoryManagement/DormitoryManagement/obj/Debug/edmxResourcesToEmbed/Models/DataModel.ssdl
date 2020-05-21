@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="DataModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+  <EntityContainer Name="DataModelStoreContainer">
+    <EntitySet Name="Dormitory" EntityType="DataModel.Store.Dormitory" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Student" EntityType="DataModel.Store.Student" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="StudentRecord" EntityType="DataModel.Store.StudentRecord" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="Class" EntityType="DataModel.Store.Class" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="ClassRecord" EntityType="DataModel.Store.ClassRecord" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="DetailsFloor" EntityType="DataModel.Store.DetailsFloor" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="DetailsLayer" EntityType="DataModel.Store.DetailsLayer" store:Type="Tables" Schema="dbo" />
+    <AssociationSet Name="ClassClassRecord" Association="DataModel.Store.ClassClassRecord">
+      <End Role="Class" EntitySet="Class" />
+      <End Role="ClassRecord" EntitySet="ClassRecord" />
+    </AssociationSet>
+    <AssociationSet Name="StudentStudentRecord" Association="DataModel.Store.StudentStudentRecord">
+      <End Role="Student" EntitySet="Student" />
+      <End Role="StudentRecord" EntitySet="StudentRecord" />
+    </AssociationSet>
+    <AssociationSet Name="DormitoryInfoStudentRecord" Association="DataModel.Store.DormitoryInfoStudentRecord">
+      <End Role="DormitoryInfo" EntitySet="Dormitory" />
+      <End Role="StudentRecord" EntitySet="StudentRecord" />
+    </AssociationSet>
+    <AssociationSet Name="StudentClassRecord" Association="DataModel.Store.StudentClassRecord">
+      <End Role="Student" EntitySet="Student" />
+      <End Role="ClassRecord" EntitySet="ClassRecord" />
+    </AssociationSet>
+    <AssociationSet Name="DetailsFloorDetailsLayer" Association="DataModel.Store.DetailsFloorDetailsLayer">
+      <End Role="DetailsFloor" EntitySet="DetailsFloor" />
+      <End Role="DetailsLayer" EntitySet="DetailsLayer" />
+    </AssociationSet>
+    <AssociationSet Name="DetailsLayerDormitoryInfo" Association="DataModel.Store.DetailsLayerDormitoryInfo">
+      <End Role="DetailsLayer" EntitySet="DetailsLayer" />
+      <End Role="DormitoryInfo" EntitySet="Dormitory" />
+    </AssociationSet>
+  </EntityContainer>
+  <EntityType Name="Dormitory">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="CreationTime" Type="datetime" Nullable="false" />
+    <Property Name="State" Type="int" Nullable="false" />
+    <Property Name="Number" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Capacity" Type="int" Nullable="false" />
+    <Property Name="Already" Type="int" Nullable="false" />
+    <Property Name="DetailsLayerId" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="Student">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Contact" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="State" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="StudentRecord">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="CheckinTime" Type="datetime" Nullable="true" />
+    <Property Name="DepartureTime" Type="datetime" Nullable="true" />
+    <Property Name="StudentId" Type="int" Nullable="false" />
+    <Property Name="DormitoryInfoId" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="Class">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="ClassName" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="State" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="ClassRecord">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="CheckinTime" Type="datetime" Nullable="true" />
+    <Property Name="DepartureTime" Type="datetime" Nullable="true" />
+    <Property Name="ClassId" Type="int" Nullable="false" />
+    <Property Name="StudentId" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="DetailsFloor">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="FloorName" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="State" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="DetailsLayer">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="LayerNumber" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="DetailsFloorId" Type="int" Nullable="false" />
+  </EntityType>
+  <Association Name="ClassClassRecord">
+    <End Role="Class" Type="DataModel.Store.Class" Multiplicity="1" />
+    <End Role="ClassRecord" Type="DataModel.Store.ClassRecord" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Class">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ClassRecord">
+        <PropertyRef Name="ClassId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="StudentStudentRecord">
+    <End Role="Student" Type="DataModel.Store.Student" Multiplicity="1" />
+    <End Role="StudentRecord" Type="DataModel.Store.StudentRecord" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Student">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="StudentRecord">
+        <PropertyRef Name="StudentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="DormitoryInfoStudentRecord">
+    <End Role="DormitoryInfo" Type="DataModel.Store.Dormitory" Multiplicity="1" />
+    <End Role="StudentRecord" Type="DataModel.Store.StudentRecord" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="DormitoryInfo">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="StudentRecord">
+        <PropertyRef Name="DormitoryInfoId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="StudentClassRecord">
+    <End Role="Student" Type="DataModel.Store.Student" Multiplicity="1" />
+    <End Role="ClassRecord" Type="DataModel.Store.ClassRecord" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Student">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ClassRecord">
+        <PropertyRef Name="StudentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="DetailsFloorDetailsLayer">
+    <End Role="DetailsFloor" Type="DataModel.Store.DetailsFloor" Multiplicity="1" />
+    <End Role="DetailsLayer" Type="DataModel.Store.DetailsLayer" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="DetailsFloor">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="DetailsLayer">
+        <PropertyRef Name="DetailsFloorId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="DetailsLayerDormitoryInfo">
+    <End Role="DetailsLayer" Type="DataModel.Store.DetailsLayer" Multiplicity="1" />
+    <End Role="DormitoryInfo" Type="DataModel.Store.Dormitory" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="DetailsLayer">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="DormitoryInfo">
+        <PropertyRef Name="DetailsLayerId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+</Schema>
